@@ -8,6 +8,9 @@ import { TodoList } from './components/TodoList/TodoList';
 import { ErrorComponent } from './components/ErrorComponent/ErrorComponent';
 import { Footer } from './components/Footer/Footer';
 import { FilterStatusType } from './types/FilterStatusType';
+import cn from 'classnames';
+import { FormComponent } from './components/FormComponent/FormComponent';
+import { ErrorMessage } from './types/ErrorStatusType';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -17,6 +20,11 @@ export const App: React.FC = () => {
   const [isCompletedTodosExist, setIsCompletedTodosExist] = useState(true);
   const [numberOfNotCompletedTodos, setNumberOfNotCompletedTodos] = useState(0);
   const [visibleTodos, setVisibleTodos] = useState<Todo[]>([]);
+  const [needToRefresh, setNeedToRefresh] = useState(true);
+  const [tempTodo, setTempTodo] = useState<Todo | null>(null);
+  const [isTempTodoLoading, setIsTempTodoLoading] = useState(false);
+  const [todoIdsToDelete, setTodoIdsToDelete] = useState<number[]>([]);
+  const [isFocusTitleInput, setIsFocusTitleInput] = useState(false);
 
   useEffect(() => {
     if (showError) {
@@ -45,27 +53,33 @@ export const App: React.FC = () => {
   }, [todos]);
 
   useEffect(() => {
-    if (filterStatus === FilterStatusType.All) {
-      setVisibleTodos(todos);
-    } else if (filterStatus === FilterStatusType.Active) {
-      setVisibleTodos(todos.filter(todo => !todo.completed));
-    } else {
-      setVisibleTodos(todos.filter(todo => todo.completed));
+    switch (filterStatus) {
+      case FilterStatusType.Active:
+        setVisibleTodos(todos.filter(todo => !todo.completed));
+        break;
+      case FilterStatusType.Completed:
+        setVisibleTodos(todos.filter(todo => todo.completed));
+        break;
+      default:
+        setVisibleTodos(todos);
     }
   }, [filterStatus, todos]);
 
   useEffect(() => {
-    getTodos()
-      .then(todosFromServer => {
-        setTodos(todosFromServer);
-        setShowError(false);
-        setErrorMessage('');
-      })
-      .catch(() => {
-        setErrorMessage('Unable to load todos');
-        setShowError(true);
-      });
-  }, []);
+    if (needToRefresh) {
+      getTodos()
+        .then(todosFromServer => {
+          setTodos(todosFromServer);
+          setShowError(false);
+          setErrorMessage('');
+        })
+        .catch(() => {
+          setErrorMessage(ErrorMessage.LoadTodos);
+          setShowError(true);
+        });
+      setNeedToRefresh(false);
+    }
+  }, [needToRefresh]);
 
   if (!USER_ID) {
     return <UserWarning />;
@@ -77,40 +91,53 @@ export const App: React.FC = () => {
 
       <div className="todoapp__content">
         <header className="todoapp__header">
-          {/* this button should have `active` class only if all todos are completed */}
           <button
             type="button"
-            className="todoapp__toggle-all active"
+            className={cn('todoapp__toggle-all', {
+              active: todos.every(todo => todo.completed),
+            })}
             data-cy="ToggleAllButton"
           />
-
-          {/* Add a todo on form submit */}
-          <form>
-            <input
-              data-cy="NewTodoField"
-              type="text"
-              className="todoapp__new-todo"
-              placeholder="What needs to be done?"
-            />
-          </form>
+          <FormComponent
+            todos={todos}
+            setTodos={setTodos}
+            setShowError={setShowError}
+            setErrorMessage={setErrorMessage}
+            setTempTodo={setTempTodo}
+            isTempTodoLoading={isTempTodoLoading}
+            setIsTempTodoLoading={setIsTempTodoLoading}
+            isFocusTitleInput={isFocusTitleInput}
+            setIsFocusTitleInput={setIsFocusTitleInput}
+          />
         </header>
 
-        <TodoList todos={visibleTodos} />
+        <TodoList
+          todos={visibleTodos}
+          tempTodo={tempTodo}
+          isTempTodoLoading={isTempTodoLoading}
+          setTodos={setTodos}
+          setShowError={setShowError}
+          setErrorMessage={setErrorMessage}
+          todoIdsToDelete={todoIdsToDelete}
+          setIsFocusTitleInput={setIsFocusTitleInput}
+        />
         {todos.length > 0 && (
           <Footer
+            todos={todos}
+            setTodos={setTodos}
             setFilterStatus={setFilterStatus}
             filterStatus={filterStatus}
             isCompletedTodosExist={isCompletedTodosExist}
             numberOfNotCompletedTodos={numberOfNotCompletedTodos}
+            setTodoIdsToDelete={setTodoIdsToDelete}
+            setShowError={setShowError}
+            setErrorMessage={setErrorMessage}
+            setIsFocusTitleInput={setIsFocusTitleInput}
           />
         )}
       </div>
 
       <ErrorComponent errorMessage={errorMessage} showError={showError} />
-      {/* 'Title should not be empty'
-          'Unable to add a todo'
-          'Unable to delete a todo'
-          'Unable to update todos' */}
     </div>
   );
 };

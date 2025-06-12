@@ -1,12 +1,21 @@
 import React from 'react';
-import { FilterStatusType } from '../../types/FilterStatusType';
 import cn from 'classnames';
+import { FilterStatusType } from '../../types/FilterStatusType';
+import { Todo } from '../../types/Todo';
+import { client } from '../../utils/fetchClient';
+import { ErrorMessage } from '../../types/ErrorStatusType';
 
 type FooterProps = {
+  todos: Todo[];
+  setTodos: (todos: Todo[]) => void;
   filterStatus: FilterStatusType;
   setFilterStatus: (filterStatus: FilterStatusType) => void;
   isCompletedTodosExist: boolean;
   numberOfNotCompletedTodos: number;
+  setTodoIdsToDelete: (todoIds: number[]) => void;
+  setShowError?: (value: boolean) => void;
+  setErrorMessage?: (errorMessage: ErrorMessage) => void;
+  setIsFocusTitleInput: (value: boolean) => void;
 };
 
 export const Footer: React.FC<FooterProps> = ({
@@ -14,9 +23,53 @@ export const Footer: React.FC<FooterProps> = ({
   setFilterStatus,
   isCompletedTodosExist,
   numberOfNotCompletedTodos,
+  todos,
+  setTodos,
+  setTodoIdsToDelete,
+  setShowError,
+  setErrorMessage,
+  setIsFocusTitleInput,
 }) => {
   const handleChangeFilterStatus = (filterStatusType: FilterStatusType) => {
     setFilterStatus(filterStatusType);
+  };
+
+  const handleClearCompleted = () => {
+    const completedTodosIds = todos
+      .filter(todo => todo.completed)
+      .map(todo => todo.id);
+
+    setTodoIdsToDelete(completedTodosIds);
+
+    Promise.allSettled(
+      completedTodosIds.map(todoId => {
+        return client.delete(`/todos/${todoId}`).then(() => todoId);
+      }),
+    )
+      .then(results => {
+        const deletedIds = results
+          .filter(result => result.status === 'fulfilled')
+          .map(result => result.value);
+
+        const notDeletedIds = results.some(
+          result => result.status === 'rejected',
+        );
+
+        if (notDeletedIds) {
+          if (setShowError && setErrorMessage) {
+            setShowError(true);
+            setErrorMessage(ErrorMessage.DeleteTodo);
+          }
+        }
+
+        if (todos && setTodos) {
+          setTodos(todos.filter(todoItem => !deletedIds.includes(todoItem.id)));
+        }
+      })
+      .finally(() => {
+        setTodoIdsToDelete([]);
+        setIsFocusTitleInput(true);
+      });
   };
 
   return (
@@ -60,12 +113,12 @@ export const Footer: React.FC<FooterProps> = ({
         </a>
       </nav>
 
-      {/* this button should be disabled if there are no completed todos */}
       <button
         type="button"
         className="todoapp__clear-completed"
         data-cy="ClearCompletedButton"
         disabled={!isCompletedTodosExist}
+        onClick={handleClearCompleted}
       >
         Clear completed
       </button>
