@@ -7,42 +7,22 @@ import { ErrorMessage } from '../../types/ErrorStatusType';
 type FormComponentProps = {
   todos: Todo[];
   setTodos: (todos: Todo[]) => void;
-  setShowError: (value: boolean) => void;
-  setErrorMessage: (errorMessage: string) => void;
+  setErrorMessage: (errorMessage: ErrorMessage | null) => void;
   setTempTodo: (todo: Todo | null) => void;
-  isTempTodoLoading: boolean;
-  setIsTempTodoLoading: (value: boolean) => void;
-  isFocusTitleInput: boolean;
-  setIsFocusTitleInput: (value: boolean) => void;
 };
 
 export const FormComponent: React.FC<FormComponentProps> = ({
   todos,
   setTodos,
-  setShowError,
   setErrorMessage,
   setTempTodo,
-  isTempTodoLoading,
-  setIsTempTodoLoading,
-  isFocusTitleInput,
-  setIsFocusTitleInput,
 }) => {
   const [newTodoTitle, setNewTodoTitle] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
-  }, []);
-
-  useEffect(() => {
-    if (isFocusTitleInput) {
-      requestAnimationFrame(() => {
-        inputRef.current?.focus();
-      });
-      setIsFocusTitleInput(false);
-    }
-  }, [isFocusTitleInput, setIsFocusTitleInput]);
-
+  });
   const handleChangeInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewTodoTitle(event.target.value);
   };
@@ -50,7 +30,6 @@ export const FormComponent: React.FC<FormComponentProps> = ({
   const handleSubmitForm = (event: React.FormEvent) => {
     event.preventDefault();
     if (!newTodoTitle.trim()) {
-      setShowError(true);
       setErrorMessage(ErrorMessage.EmptyTitle);
       requestAnimationFrame(() => {
         inputRef.current?.focus();
@@ -58,8 +37,6 @@ export const FormComponent: React.FC<FormComponentProps> = ({
 
       return;
     }
-
-    setIsTempTodoLoading(true);
 
     const temp = {
       id: 0,
@@ -70,24 +47,24 @@ export const FormComponent: React.FC<FormComponentProps> = ({
 
     setTempTodo(temp);
 
+    if (inputRef.current) {
+      inputRef.current.disabled = true;
+    }
+
     client
       .post<Todo>('/todos', temp)
       .then(createdTodo => {
         setTodos([...todos, createdTodo]);
         setNewTodoTitle('');
-        setTempTodo(null);
-        setIsFocusTitleInput(true);
       })
       .catch(() => {
-        setTempTodo(null);
-        setShowError(true);
         setErrorMessage(ErrorMessage.AddTodo);
-        setIsTempTodoLoading(false);
-        setIsFocusTitleInput(true);
       })
       .finally(() => {
-        setIsTempTodoLoading(false);
-        setIsFocusTitleInput(true);
+        setTempTodo(null);
+        if (inputRef.current) {
+          inputRef.current.disabled = false;
+        }
       });
   };
 
@@ -101,7 +78,6 @@ export const FormComponent: React.FC<FormComponentProps> = ({
         placeholder="What needs to be done?"
         value={newTodoTitle}
         onChange={handleChangeInput}
-        disabled={isTempTodoLoading}
       />
     </form>
   );

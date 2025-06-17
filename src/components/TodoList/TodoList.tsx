@@ -6,23 +6,17 @@ import { ErrorMessage } from '../../types/ErrorStatusType';
 type TodoListProps = {
   todos: Todo[];
   tempTodo: Todo | null;
-  isTempTodoLoading: boolean;
   setTodos: (todos: Todo[]) => void;
-  setShowError: (value: boolean) => void;
   setErrorMessage: (errorMessage: ErrorMessage) => void;
   todoIdsToDelete: number[];
-  setIsFocusTitleInput: (value: boolean) => void;
 };
 
 export const TodoList: React.FC<TodoListProps> = ({
   todos,
   tempTodo,
-  isTempTodoLoading,
   setTodos,
-  setShowError,
   setErrorMessage,
   todoIdsToDelete,
-  setIsFocusTitleInput,
 }) => {
   return (
     <section className="todoapp__main" data-cy="TodoList">
@@ -33,16 +27,13 @@ export const TodoList: React.FC<TodoListProps> = ({
             todo={todo}
             setTodos={setTodos}
             todos={todos}
-            setShowError={setShowError}
             setErrorMessage={setErrorMessage}
             todoIdsToDelete={todoIdsToDelete}
-            setIsFocusTitleInput={setIsFocusTitleInput}
+            isTempTodo={false}
           />
         );
       })}
-      {tempTodo && (
-        <TodoItem todo={tempTodo} isTempTodoLoading={isTempTodoLoading} />
-      )}
+      {tempTodo && <TodoItem todo={tempTodo} isTempTodo={true} />}
     </section>
   );
 };

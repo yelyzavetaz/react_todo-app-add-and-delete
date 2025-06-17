@@ -10,25 +10,21 @@ type FooterProps = {
   setTodos: (todos: Todo[]) => void;
   filterStatus: FilterStatusType;
   setFilterStatus: (filterStatus: FilterStatusType) => void;
-  isCompletedTodosExist: boolean;
+  completedTodoExists: boolean;
   numberOfNotCompletedTodos: number;
   setTodoIdsToDelete: (todoIds: number[]) => void;
-  setShowError?: (value: boolean) => void;
   setErrorMessage?: (errorMessage: ErrorMessage) => void;
-  setIsFocusTitleInput: (value: boolean) => void;
 };
 
 export const Footer: React.FC<FooterProps> = ({
   filterStatus,
   setFilterStatus,
-  isCompletedTodosExist,
+  completedTodoExists,
   numberOfNotCompletedTodos,
   todos,
   setTodos,
   setTodoIdsToDelete,
-  setShowError,
   setErrorMessage,
-  setIsFocusTitleInput,
 }) => {
   const handleChangeFilterStatus = (filterStatusType: FilterStatusType) => {
     setFilterStatus(filterStatusType);
@@ -56,8 +52,7 @@ export const Footer: React.FC<FooterProps> = ({
         );
 
         if (notDeletedIds) {
-          if (setShowError && setErrorMessage) {
-            setShowError(true);
+          if (setErrorMessage) {
             setErrorMessage(ErrorMessage.DeleteTodo);
           }
         }
@@ -68,7 +63,6 @@ export const Footer: React.FC<FooterProps> = ({
       })
       .finally(() => {
         setTodoIdsToDelete([]);
-        setIsFocusTitleInput(true);
       });
   };
 
@@ -117,7 +111,7 @@ export const Footer: React.FC<FooterProps> = ({
         type="button"
         className="todoapp__clear-completed"
         data-cy="ClearCompletedButton"
-        disabled={!isCompletedTodosExist}
+        disabled={!completedTodoExists}
         onClick={handleClearCompleted}
       >
         Clear completed

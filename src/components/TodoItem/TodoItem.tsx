@@ -9,30 +9,20 @@ type TodoItemProps = {
   todo: Todo;
   todos?: Todo[] | null;
   setTodos?: (todos: Todo[]) => void;
-  isTempTodoLoading?: boolean | null;
-  setShowError?: (value: boolean) => void;
+  isTempTodo: boolean;
   setErrorMessage?: (errorMessage: ErrorMessage) => void;
   todoIdsToDelete?: number[];
-  setIsFocusTitleInput?: (value: boolean) => void;
 };
 
 export const TodoItem: React.FC<TodoItemProps> = ({
   todo,
   todos,
-  isTempTodoLoading,
+  isTempTodo,
   setTodos,
-  setShowError,
   setErrorMessage,
   todoIdsToDelete,
-  setIsFocusTitleInput,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (isTempTodoLoading) {
-      setIsLoading(isTempTodoLoading);
-    }
-  }, [isTempTodoLoading]);
 
   useEffect(() => {
     if (todoIdsToDelete && todoIdsToDelete.includes(todo.id)) {
@@ -44,10 +34,6 @@ export const TodoItem: React.FC<TodoItemProps> = ({
 
   const handleOnClickDelete = () => {
     setIsLoading(true);
-    if (setIsFocusTitleInput) {
-      setIsFocusTitleInput(true);
-    }
-
     client
       .delete(`/todos/${todo.id}`)
       .then(() => {
@@ -56,8 +42,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
         }
       })
       .catch(() => {
-        if (setShowError && setErrorMessage) {
-          setShowError(true);
+        if (setErrorMessage) {
           setErrorMessage(ErrorMessage.DeleteTodo);
         }
       })
@@ -92,7 +77,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
       <div
         data-cy="TodoLoader"
         className={cn('modal overlay', {
-          'is-active': isLoading || isTempTodoLoading,
+          'is-active': isLoading || isTempTodo,
         })}
       >
         <div className="modal-background has-background-white-ter" />
