@@ -8,7 +8,7 @@ import { deleteTodo } from '../../api/todos';
 type TodoItemProps = {
   todo: Todo;
   todos?: Todo[] | null;
-  setTodos?: (todos: Todo[]) => void;
+  setTodos?: React.Dispatch<React.SetStateAction<Todo[]>>;
   isTempTodo: boolean;
   setErrorMessage?: (errorMessage: ErrorMessage) => void;
   todoIdsToDelete?: number[];
@@ -37,7 +37,9 @@ export const TodoItem: React.FC<TodoItemProps> = ({
     deleteTodo(todo.id)
       .then(() => {
         if (todos && setTodos) {
-          setTodos(todos.filter(todoItem => todoItem.id !== todo.id));
+          setTodos(currentTodos =>
+            currentTodos.filter(todoItem => todoItem.id !== todo.id),
+          );
         }
       })
       .catch(() => {

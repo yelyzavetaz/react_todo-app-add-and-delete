@@ -4,14 +4,12 @@ import { Todo } from '../../types/Todo';
 import { ErrorMessage } from '../../types/ErrorStatusType';
 
 type FormComponentProps = {
-  todos: Todo[];
-  setTodos: (todos: Todo[]) => void;
+  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
   setErrorMessage: (errorMessage: ErrorMessage | null) => void;
   setTempTodo: (todo: Todo | null) => void;
 };
 
 export const FormComponent: React.FC<FormComponentProps> = ({
-  todos,
   setTodos,
   setErrorMessage,
   setTempTodo,
@@ -52,7 +50,7 @@ export const FormComponent: React.FC<FormComponentProps> = ({
 
     createTodo(temp)
       .then(createdTodo => {
-        setTodos([...todos, createdTodo]);
+        setTodos(currentTodos => [...currentTodos, createdTodo]);
         setNewTodoTitle('');
       })
       .catch(() => {

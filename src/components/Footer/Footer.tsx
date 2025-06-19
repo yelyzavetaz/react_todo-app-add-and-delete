@@ -7,7 +7,7 @@ import { deleteTodo } from '../../api/todos';
 
 type FooterProps = {
   todos: Todo[];
-  setTodos: (todos: Todo[]) => void;
+  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
   filterStatus: FilterStatusType;
   setFilterStatus: (filterStatus: FilterStatusType) => void;
   completedTodoExists: boolean;
@@ -57,8 +57,10 @@ export const Footer: React.FC<FooterProps> = ({
           }
         }
 
-        if (todos && setTodos) {
-          setTodos(todos.filter(todoItem => !deletedIds.includes(todoItem.id)));
+        if (setTodos) {
+          setTodos(currentTodos =>
+            currentTodos.filter(todoItem => !deletedIds.includes(todoItem.id)),
+          );
         }
       })
       .finally(() => {

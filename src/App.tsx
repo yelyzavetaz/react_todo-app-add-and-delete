@@ -45,7 +45,6 @@ export const App: React.FC = () => {
             data-cy="ToggleAllButton"
           />
           <FormComponent
-            todos={todos}
             setTodos={setTodos}
             setErrorMessage={setErrorMessage}
             setTempTodo={setTempTodo}

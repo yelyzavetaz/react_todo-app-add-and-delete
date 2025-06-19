@@ -6,7 +6,7 @@ import { ErrorMessage } from '../../types/ErrorStatusType';
 type TodoListProps = {
   todos: Todo[];
   tempTodo: Todo | null;
-  setTodos: (todos: Todo[]) => void;
+  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
   setErrorMessage: (errorMessage: ErrorMessage) => void;
   todoIdsToDelete: number[];
 };
