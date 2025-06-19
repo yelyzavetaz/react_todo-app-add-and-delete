@@ -2,18 +2,14 @@ import { FilterStatusType } from '../types/FilterStatusType';
 import { Todo } from '../types/Todo';
 
 export const getVisibleTodos = (todoList: Todo[], filter: FilterStatusType) => {
-  let filteredTodoList = [...todoList];
-
   switch (filter) {
     case FilterStatusType.Active:
-      filteredTodoList = filteredTodoList.filter(todo => !todo.completed);
-      break;
+      return todoList.filter(todo => !todo.completed);
     case FilterStatusType.Completed:
-      filteredTodoList = filteredTodoList.filter(todo => todo.completed);
-      break;
+      return todoList.filter(todo => todo.completed);
     default:
       break;
   }
 
-  return filteredTodoList;
+  return todoList;
 };
