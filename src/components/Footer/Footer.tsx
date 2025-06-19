@@ -2,8 +2,8 @@ import React from 'react';
 import cn from 'classnames';
 import { FilterStatusType } from '../../types/FilterStatusType';
 import { Todo } from '../../types/Todo';
-import { client } from '../../utils/fetchClient';
 import { ErrorMessage } from '../../types/ErrorStatusType';
+import { deleteTodo } from '../../api/todos';
 
 type FooterProps = {
   todos: Todo[];
@@ -39,7 +39,7 @@ export const Footer: React.FC<FooterProps> = ({
 
     Promise.allSettled(
       completedTodosIds.map(todoId => {
-        return client.delete(`/todos/${todoId}`).then(() => todoId);
+        return deleteTodo(todoId).then(() => todoId);
       }),
     )
       .then(results => {
